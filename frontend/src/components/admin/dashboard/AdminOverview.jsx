@@ -79,6 +79,8 @@ const AdminOverview = () => {
         amount: order.total || 0,
         status: order.status || 'pending',
         createdAt: order.createdAt,
+        rechargeService: order.rechargeMeta?.service || '',
+        rechargePlayerId: order.rechargeMeta?.playerId || '',
       }));
       setRecentOrders(orders);
     } catch (error) {
@@ -519,6 +521,13 @@ const AdminOverview = () => {
                   <div>
                     <div className="font-medium text-sm">{order.orderNumber}</div>
                     <div className="text-xs text-[var(--text-secondary)]">{order.customer}</div>
+                    {order.rechargeService ? (
+                      <div className="mt-1 text-[10px] inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-primary">
+                        <FaShoppingCart className="text-[9px]" />
+                        {order.rechargeService}
+                        {order.rechargePlayerId ? ` • ${order.rechargePlayerId}` : ''}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="text-right">
                     <div className="font-bold text-primary">{formatCurrency(order.amount)}</div>
