@@ -94,7 +94,14 @@ exports.createOrder = async (req, res) => {
     cart.couponCode = null;
     await cart.save();
 
-    await emailService.sendOrderConfirmation(email, order);
+    let emailWarning = null;
+    try {
+      await emailService.sendOrderConfirmation(email, order);
+    } catch (emailError) {
+      // Do not fail order creation when SMTP is misconfigured.
+      console.error('Order confirmation email failed:', emailError.message);
+      emailWarning = 'تم إنشاء الطلب لكن تعذر إرسال رسالة التأكيد عبر البريد الإلكتروني';
+    }
 
     const notification = await Notification.create({
       userId: req.user._id,
@@ -107,7 +114,7 @@ exports.createOrder = async (req, res) => {
     emitToUser(req.user._id, 'order_created', { userId: req.user._id, order });
     emitToUser(req.user._id, 'notification_created', notification);
 
-    res.status(201).json({ success: true, order });
+    res.status(201).json({ success: true, order, warning: emailWarning });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
