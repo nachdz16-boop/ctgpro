@@ -83,6 +83,13 @@ const Navbar = () => {
 
   const languages = SUPPORTED_LANGUAGES;
 
+  const isCategoryLinkActive = (path) => {
+    const [pathname, query = ''] = path.split('?');
+    if (location.pathname !== pathname) return false;
+    if (!query) return location.pathname === pathname && !location.search;
+    return location.search === `?${query}`;
+  };
+
   return (
     <>
       {/* Top Bar */}
@@ -204,14 +211,14 @@ const Navbar = () => {
             </Link>
 
             {/* Desktop Page Links */}
-            <div className="hidden xl:flex items-center gap-4 ml-6">
+            <div className="hidden lg:flex items-center gap-4 ml-6">
               {categories
                 .filter((cat) => ['home', 'topup', 'giftcards', 'cdkeys', 'gamecards', 'about', 'contact', 'recharge'].includes(cat.id))
                 .map((cat) => (
                   <Link
                     key={cat.id}
                     to={cat.path}
-                    className={`text-sm font-medium transition ${location.pathname === cat.path.split('?')[0] ? 'text-primary' : 'text-[var(--text-secondary)] hover:text-primary'}`}
+                    className={`text-sm font-medium transition ${isCategoryLinkActive(cat.path) ? 'text-primary' : 'text-[var(--text-secondary)] hover:text-primary'}`}
                   >
                     {cat.label}
                   </Link>
