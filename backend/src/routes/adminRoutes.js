@@ -21,6 +21,7 @@ const {
   updateSellerStatus,
   deleteSeller,
   getOrders,
+  getOrderDetails,
   getRecentOrders,
   getPages,
   createPage,
@@ -127,6 +128,7 @@ router.delete('/sellers/:id', deleteSeller);
 // Orders
 router.get('/orders', getOrders);
 router.get('/orders/recent', getRecentOrders);
+router.get('/orders/:id', getOrderDetails);
 
 // Pages
 router.get('/pages', getPages);

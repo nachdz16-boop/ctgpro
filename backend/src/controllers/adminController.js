@@ -783,6 +783,22 @@ exports.getRecentOrders = async (req, res) => {
   }
 };
 
+exports.getOrderDetails = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id)
+      .populate('userId', 'name email phone')
+      .populate('sellerId', 'name email');
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'الطلب غير موجود' });
+    }
+
+    res.json({ success: true, order });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // ===== Pages =====
 exports.getPages = async (req, res) => {
   try {

@@ -31,6 +31,7 @@ const UsersManagement = lazy(() => import('./components/admin/dashboard/UsersMan
 const ProductsManagement = lazy(() => import('./components/admin/dashboard/ProductsManagement'));
 const CodesManagement = lazy(() => import('./components/admin/dashboard/CodesManagement'));
 const OrdersManagement = lazy(() => import('./components/admin/dashboard/OrdersManagement'));
+const AdminOrderDetails = lazy(() => import('./components/admin/dashboard/AdminOrderDetails'));
 const PaymentManagement = lazy(() => import('./components/admin/dashboard/PaymentManagement'));
 const SocialManagement = lazy(() => import('./components/admin/dashboard/SocialManagement'));
 const StoreManagement = lazy(() => import('./components/admin/dashboard/StoreManagement'));
@@ -200,6 +201,7 @@ function App() {
                               <Route path="sellers" element={<SellersManagement />} />
                               <Route path="products" element={<ProductsManagement />} />
                               <Route path="orders" element={<OrdersManagement />} />
+                              <Route path="orders/:id" element={<AdminOrderDetails />} />
                               <Route path="codes" element={<CodesManagement />} />
                               <Route path="payment" element={<PaymentManagement />} />
                               <Route path="finance" element={<FinanceInventoryZakat />} />
