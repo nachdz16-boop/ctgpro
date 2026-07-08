@@ -8,11 +8,14 @@ module.exports = {
   jwtExpire: process.env.JWT_EXPIRE || '7d',
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
   email: {
+    enabled: process.env.EMAIL_ENABLED !== 'false',
     host: process.env.EMAIL_HOST || 'smtp.gmail.com',
     port: parseInt(process.env.EMAIL_PORT) || 587,
     secure: process.env.EMAIL_SECURE === 'true',
     user: process.env.EMAIL_USER || '',
     pass: process.env.EMAIL_PASS || '',
+    fromName: process.env.EMAIL_FROM_NAME || 'CTGPRO',
+    fromAddress: process.env.EMAIL_FROM_ADDRESS || process.env.EMAIL_USER || '',
   },
   upload: {
     maxSize: 5 * 1024 * 1024,

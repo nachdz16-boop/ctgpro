@@ -28,7 +28,13 @@ exports.register = async (req, res) => {
       await user.save();
     }
 
-    await emailService.sendWelcomeEmail(user.email, user.name);
+    let emailWarning = null;
+    try {
+      await emailService.sendWelcomeEmail(user.email, user.name);
+    } catch (emailError) {
+      console.error('Welcome email failed:', emailError.message);
+      emailWarning = 'تم إنشاء الحساب لكن تعذر إرسال رسالة الترحيب عبر البريد الإلكتروني';
+    }
 
     const io = getIO();
     if (io) {
@@ -47,6 +53,7 @@ exports.register = async (req, res) => {
     res.status(201).json({
       success: true,
       token,
+      warning: emailWarning,
       user: {
         id: user._id,
         name: user.name,
@@ -302,7 +309,17 @@ exports.forgotPassword = async (req, res) => {
     user.resetPasswordExpire = Date.now() + 3600000;
     await user.save();
 
-    await emailService.sendPasswordResetEmail(user.email, resetToken);
+    try {
+      await emailService.sendPasswordResetEmail(user.email, resetToken);
+    } catch (emailError) {
+      if (emailError.code === 'SMTP_AUTH_FAILED' || emailError.code === 'EMAIL_NOT_CONFIGURED') {
+        return res.status(503).json({
+          success: false,
+          message: 'تعذر إرسال البريد الآن. يرجى ضبط إعدادات SMTP ثم إعادة المحاولة.',
+        });
+      }
+      throw emailError;
+    }
 
     res.json({ success: true, message: 'تم إرسال رابط استعادة كلمة المرور إلى بريدك الإلكتروني' });
   } catch (error) {

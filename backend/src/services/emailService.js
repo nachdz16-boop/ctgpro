@@ -2,8 +2,14 @@ const nodemailer = require('nodemailer');
 const config = require('../config/config');
 
 let transporter = null;
+const isEmailConfigured =
+  config.email.enabled &&
+  Boolean(config.email.host) &&
+  Boolean(config.email.port) &&
+  Boolean(config.email.user) &&
+  Boolean(config.email.pass);
 
-if (config.email.user && config.email.pass) {
+if (isEmailConfigured) {
   transporter = nodemailer.createTransport({
     host: config.email.host,
     port: config.email.port,
@@ -12,14 +18,31 @@ if (config.email.user && config.email.pass) {
   });
 }
 
-const sendEmail = async (to, subject, html) => {
+const buildEmailError = (code, message) => {
+  const error = new Error(message);
+  error.code = code;
+  return error;
+};
+
+const sendEmail = async (to, subject, html, options = {}) => {
+  const { required = false, context = 'email' } = options;
+
   if (!transporter) {
-    console.log('Email service not configured. Skipping email send.');
+    const reason = !config.email.enabled
+      ? 'Email service disabled by EMAIL_ENABLED=false.'
+      : 'Email service not configured. Missing SMTP credentials.';
+
+    if (required) {
+      throw buildEmailError('EMAIL_NOT_CONFIGURED', `${reason} Unable to send ${context}.`);
+    }
+
+    console.warn(reason);
     return;
   }
+
   try {
     const info = await transporter.sendMail({
-      from: `"CTGPRO" <${config.email.user}>`,
+      from: `"${config.email.fromName}" <${config.email.fromAddress}>`,
       to,
       subject,
       html,
@@ -27,8 +50,17 @@ const sendEmail = async (to, subject, html) => {
     console.log('Email sent:', info.messageId);
     return info;
   } catch (error) {
-    console.error('Email send error:', error);
-    throw error;
+    const isAuthError = error.code === 'EAUTH' || error.responseCode === 535;
+    if (isAuthError) {
+      console.error('SMTP authentication failed. Check EMAIL_USER and EMAIL_PASS (App Password for Gmail).');
+      throw buildEmailError(
+        'SMTP_AUTH_FAILED',
+        'SMTP authentication failed. Verify EMAIL_USER and EMAIL_PASS (use App Password with Gmail).'
+      );
+    }
+
+    console.error('Email send error:', error.message);
+    throw buildEmailError('EMAIL_SEND_FAILED', error.message || 'Failed to send email');
   }
 };
 
@@ -42,7 +74,7 @@ exports.sendWelcomeEmail = async (email, name) => {
       <p style="margin-top: 30px; color: #8b9ab0; font-size: 12px;">© 2024 CTGPRO - جميع الحقوق محفوظة</p>
     </div>
   `;
-  return sendEmail(email, 'مرحباً بك في CTGPRO', html);
+  return sendEmail(email, 'مرحباً بك في CTGPRO', html, { required: false, context: 'welcome email' });
 };
 
 exports.sendOrderConfirmation = async (email, order) => {
@@ -77,7 +109,7 @@ exports.sendOrderConfirmation = async (email, order) => {
       <p style="margin-top: 30px; color: #8b9ab0; font-size: 12px;">© 2024 CTGPRO - جميع الحقوق محفوظة</p>
     </div>
   `;
-  return sendEmail(email, `تأكيد الطلب #${order.orderNumber}`, html);
+  return sendEmail(email, `تأكيد الطلب #${order.orderNumber}`, html, { required: false, context: 'order confirmation' });
 };
 
 exports.sendPasswordResetEmail = async (email, token) => {
@@ -95,5 +127,5 @@ exports.sendPasswordResetEmail = async (email, token) => {
       <p style="margin-top: 30px; color: #8b9ab0; font-size: 12px;">© 2024 CTGPRO - جميع الحقوق محفوظة</p>
     </div>
   `;
-  return sendEmail(email, 'استعادة كلمة المرور', html);
+  return sendEmail(email, 'استعادة كلمة المرور', html, { required: true, context: 'password reset email' });
 };
