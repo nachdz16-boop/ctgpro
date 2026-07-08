@@ -48,6 +48,9 @@ const OrdersManagement = () => {
       order.userId?.name,
       order.userId?.email,
       order.sellerId?.name,
+      order.rechargeMeta?.service,
+      order.rechargeMeta?.playerId,
+      order.rechargeMeta?.serverId,
     ]
       .filter(Boolean)
       .some((field) => field.toLowerCase().includes(lowerSearch));
@@ -112,13 +115,16 @@ const OrdersManagement = () => {
           <button
             onClick={() => {
               const csv = [
-                ['رقم الطلب', 'العميل', 'البائع', 'المجموع', 'الحالة', 'التاريخ'],
+                ['رقم الطلب', 'العميل', 'البائع', 'المجموع', 'الحالة', 'الخدمة الرقمية', 'Player ID', 'Server ID', 'التاريخ'],
                 ...filteredOrders.map((order) => [
                   order.orderNumber,
                   order.userId?.name || 'مستخدم',
                   order.sellerId?.name || 'بدون بائع',
                   order.total,
                   order.status,
+                  order.rechargeMeta?.service || '',
+                  order.rechargeMeta?.playerId || '',
+                  order.rechargeMeta?.serverId || '',
                   new Date(order.createdAt).toLocaleString('ar-DZ'),
                 ]),
               ]
@@ -196,6 +202,7 @@ const OrdersManagement = () => {
                 <th className="py-3 px-4">البائع</th>
                 <th className="py-3 px-4">المجموع</th>
                 <th className="py-3 px-4">الحالة</th>
+                <th className="py-3 px-4">بيانات الشحن</th>
                 <th className="py-3 px-4">التاريخ</th>
                 <th className="py-3 px-4">إجراءات</th>
               </tr>
@@ -210,6 +217,17 @@ const OrdersManagement = () => {
                     <td className="py-3 px-4">{order.sellerId?.name || 'بدون بائع'}</td>
                     <td className="py-3 px-4">{formatCurrency(order.total || 0)}</td>
                     <td className={`py-3 px-4 ${status.className}`}>{status.label}</td>
+                    <td className="py-3 px-4 text-xs">
+                      {order.rechargeMeta ? (
+                        <div className="space-y-1">
+                          <div className="font-semibold text-primary">{order.rechargeMeta.service || 'شحن رقمي'}</div>
+                          <div>Player ID: {order.rechargeMeta.playerId || '-'}</div>
+                          {order.rechargeMeta.serverId ? <div>Server ID: {order.rechargeMeta.serverId}</div> : null}
+                        </div>
+                      ) : (
+                        <span className="text-[var(--text-secondary)]">-</span>
+                      )}
+                    </td>
                     <td className="py-3 px-4">{new Date(order.createdAt).toLocaleString('ar-DZ')}</td>
                     <td className="py-3 px-4">
                       <button
@@ -224,7 +242,7 @@ const OrdersManagement = () => {
               })}
               {filteredOrders.length === 0 && (
                 <tr>
-                  <td colSpan="7" className="py-6 text-center text-[var(--text-secondary)]">لا توجد طلبات مطابقة للبحث أو الفلتر</td>
+                  <td colSpan="8" className="py-6 text-center text-[var(--text-secondary)]">لا توجد طلبات مطابقة للبحث أو الفلتر</td>
                 </tr>
               )}
             </tbody>

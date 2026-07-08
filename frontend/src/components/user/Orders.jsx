@@ -148,6 +148,21 @@ const Orders = () => {
                 </div>
               ))}
             </div>
+            {order.rechargeMeta && (
+              <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-3 text-sm space-y-1">
+                <div className="font-semibold text-primary">بيانات الشحن الرقمي</div>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-[var(--text-secondary)]">
+                  <span>الخدمة: <span className="text-[var(--text-primary)] font-medium">{order.rechargeMeta.service || '-'}</span></span>
+                  <span>Player ID: <span className="text-[var(--text-primary)] font-medium">{order.rechargeMeta.playerId || '-'}</span></span>
+                  {order.rechargeMeta.serverId ? (
+                    <span>Server ID: <span className="text-[var(--text-primary)] font-medium">{order.rechargeMeta.serverId}</span></span>
+                  ) : null}
+                  {order.rechargeMeta.validatedAt ? (
+                    <span>تم التحقق: <span className="text-[var(--text-primary)] font-medium">{new Date(order.rechargeMeta.validatedAt).toLocaleString('ar-DZ')}</span></span>
+                  ) : null}
+                </div>
+              </div>
+            )}
             <div className="mt-4 flex flex-wrap gap-2">
               <button
                 onClick={() => {
