@@ -1,0 +1,87 @@
+*** Begin Patch
+*** Update File: C:\Users\SoftLink\Desktop\Nouveau dossier (3)\frontend\src\components\admin\dashboard\PaymentManagement.jsx
+@@
+   const saveGatewaySettings = () => {
+-    if (!gatewayFormData) return;
+-
+-    if (selectedGateway) {
+-      setGateways(gateways.map((gateway) =>
+-        gateway.id === selectedGateway.id
+-          ? { ...gateway, ...gatewayFormData }
+-          : gateway
+-      ));
+-      setSelectedGateway((prev) => prev ? { ...prev, ...gatewayFormData } : prev);
+-      toast.success(`✅ تم حفظ إعدادات ${selectedGateway.name} بنجاح`);
+-      setIsGatewayModalOpen(false);
+-      return;
+-    }
+-
+-    // Create new gateway
+-    const name = (gatewayFormData.name || 'new-gateway').trim();
+-    const id = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
+-    const newGateway = {
+-      id,
+-      name: gatewayFormData.name || 'New Gateway',
+-      icon: <FaCard />,
+-      color: gatewayFormData.color || '#635bff',
+-      status: gatewayFormData.status || 'inactive',
+-      config: gatewayFormData.config || {},
+-    };
+-    setGateways([newGateway, ...gateways]);
+-    toast.success(`✅ تم إضافة وسيلة الدفع ${newGateway.name} بنجاح`);
+-    setIsGatewayModalOpen(false);
++    if (!gatewayFormData) return;
++
++    (async () => {
++      try {
++        const api = (await import('../../../services/api')).default;
++        if (selectedGateway) {
++          const res = await api.put(`/admin/payment-gateways/${selectedGateway.id}`, gatewayFormData);
++          if (res.data?.success) {
++            const g = res.data.gateway;
++            const mapped = {
++              id: g._id,
++              name: g.name,
++              icon: <FaCard />,
++              color: g.color || '#635bff',
++              status: g.status,
++              config: g.config || {},
++            };
++            setGateways(gateways.map((gw) => gw.id === selectedGateway.id ? mapped : gw));
++            setSelectedGateway(mapped);
++            toast.success(`✅ تم حفظ إعدادات ${mapped.name} بنجاح`);
++            setIsGatewayModalOpen(false);
++            return;
++          }
++        } else {
++          const res = await api.post('/admin/payment-gateways', gatewayFormData);
++          if (res.data?.success) {
++            const g = res.data.gateway;
++            const mapped = {
++              id: g._id,
++              name: g.name,
++              icon: <FaCard />,
++              color: g.color || '#635bff',
++              status: g.status,
++              config: g.config || {},
++            };
++            setGateways([mapped, ...gateways]);
++            toast.success(`✅ تم إضافة وسيلة الدفع ${mapped.name} بنجاح`);
++            setIsGatewayModalOpen(false);
++            return;
++          }
++        }
++      } catch (err) {
++        console.error('gateway save error', err);
++        toast.error('خطأ أثناء حفظ إعدادات بوابة الدفع');
++      }
++    })();
+   };
++
++  useEffect(() => {
++    // load gateways when the gateways tab is active or on mount
++    if (activeTab === 'gateways') fetchGateways();
++    // also load once on mount
++    // eslint-disable-next-line react-hooks/exhaustive-deps
++  }, [activeTab]);
+*** End Patch
