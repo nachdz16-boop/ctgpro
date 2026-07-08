@@ -48,8 +48,8 @@ router.get('/ai-bots/:id/conversations', getAiBotConversations);
 
 // Chat bots
 router.get('/chat-bots', getChatBots);
-router.get('/chat-bots/:id', getChatBot);
 router.get('/chat-bots/conversations', getChatBotConversations);
+router.get('/chat-bots/:id', getChatBot);
 router.post('/chat-bots', createChatBot);
 router.put('/chat-bots/:id', updateChatBot);
 router.delete('/chat-bots/:id', deleteChatBot);

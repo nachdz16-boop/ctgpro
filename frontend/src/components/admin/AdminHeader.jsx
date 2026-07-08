@@ -234,7 +234,6 @@ const AdminHeader = () => {
         >
           {theme === 'dark' ? <FaSun className="text-sm" /> : <FaMoon className="text-sm" />}
         </button>
-                  onClick={markAllNotificationsAsRead}
         {/* زر اختيار اللغة */}
         <div ref={langDropdownRef} className="relative">
           <button
@@ -286,7 +285,7 @@ const AdminHeader = () => {
               <div className="p-3 border-b border-[var(--border-color)] flex items-center justify-between">
                 <span className="font-bold text-sm">الإشعارات</span>
                 <button 
-                  onClick={() => setNotifications(notifications.map(n => ({ ...n, read: true })))}
+                  onClick={markAllNotificationsAsRead}
                   className="text-xs text-primary hover:underline"
                 >
                   تحديد الكل كمقروء

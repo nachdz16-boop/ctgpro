@@ -115,10 +115,21 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  const getTotal = useCallback(() => {
+    if (!cart?.items?.length) return 0;
+
+    return cart.items.reduce((sum, item) => {
+      const qty = Number(item?.qty) || 0;
+      const price = Number(item?.price ?? item?.productId?.price) || 0;
+      return sum + qty * price;
+    }, 0);
+  }, [cart]);
+
   const value = {
     cart,
     loading,
     totalItems,
+    getTotal,
     addToCart,
     removeFromCart,
     refreshCart: loadCart,

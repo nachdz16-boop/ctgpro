@@ -66,6 +66,11 @@ export const ThemeProvider = ({ children }) => {
     if (!registerRestoreHandler) return;
 
     const handler = () => {
+      const storedTheme = localStorage.getItem('ctgpro_theme');
+      if (storedTheme === 'light' || storedTheme === 'dark' || storedTheme === 'system') {
+        return;
+      }
+
       const preferredTheme = userRef.current?.preferences?.theme;
       if (preferredTheme === 'light' || preferredTheme === 'dark') {
         setTheme(preferredTheme);
@@ -77,7 +82,16 @@ export const ThemeProvider = ({ children }) => {
   }, [registerRestoreHandler]);
 
   const toggleTheme = () => {
-    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+    setTheme((prev) => {
+      const resolvedCurrent = prev === 'system'
+        ? (window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ? 'dark' : 'light')
+        : prev;
+      const nextTheme = resolvedCurrent === 'dark' ? 'light' : 'dark';
+
+      // Apply immediately so UI feedback is instant and resilient to remounts.
+      applyTheme(nextTheme);
+      return nextTheme;
+    });
   };
 
   return (

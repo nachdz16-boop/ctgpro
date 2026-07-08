@@ -12,6 +12,7 @@ import api from '../../services/api';
 import toast from 'react-hot-toast';
 
 const Shop = () => {
+  const PRODUCTS_PER_PAGE = 8;
   const [searchParams] = useSearchParams();
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
@@ -28,6 +29,15 @@ const Shop = () => {
     sort: 'newest',
   });
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
+
+  useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      category: searchParams.get('category') || '',
+      search: searchParams.get('search') || '',
+    }));
+    setPagination((prev) => ({ ...prev, page: 1 }));
+  }, [searchParams]);
 
   // ===== قائمة التصنيفات =====
   const categories = [
@@ -60,7 +70,7 @@ const Shop = () => {
       if (filters.sort) params.sort = filters.sort;
       
       params.page = pagination.page;
-      params.limit = 12;
+      params.limit = PRODUCTS_PER_PAGE;
       
       console.log('🔍 Fetching products with params:', params);
       
