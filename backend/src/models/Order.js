@@ -35,6 +35,17 @@ const OrderSchema = new mongoose.Schema({
     paypalEmail: String,
     cryptoWallet: String,
   },
+  rechargeMeta: {
+    serviceId: String,
+    serviceType: String,
+    service: String,
+    playerId: String,
+    serverId: String,
+    email: String,
+    phone: String,
+    note: String,
+    validatedAt: Date,
+  },
   shippingAddress: {
     street: String,
     city: String,

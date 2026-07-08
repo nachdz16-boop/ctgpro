@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { useLanguage } from '../../context/LanguageContext';
@@ -12,6 +12,8 @@ const Checkout = () => {
   const { cart, getTotal, refreshCart } = useCart();
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const location = useLocation();
+  const rechargeMeta = location.state?.rechargeMeta || null;
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: user?.email || '',
@@ -40,6 +42,17 @@ const Checkout = () => {
     if (!isAuthenticated) navigate('/login');
     if (!cart || cart.items?.length === 0) navigate('/shop');
   }, [isAuthenticated, cart]);
+
+  useEffect(() => {
+    if (!rechargeMeta) return;
+
+    setFormData((prev) => ({
+      ...prev,
+      email: rechargeMeta.email || prev.email,
+      phone: rechargeMeta.phone || prev.phone,
+      notes: rechargeMeta.note || prev.notes,
+    }));
+  }, [rechargeMeta]);
 
   useEffect(() => {
     const loadPaymentGateways = async () => {
@@ -92,6 +105,7 @@ const Checkout = () => {
         paymentMethod,
         paymentGateway: selectedGateway,
         paymentDetails,
+        rechargeMeta,
       };
       const res = await api.post('/orders', orderData);
       toast.success(paymentMethod === 'cod' || paymentMethod === 'bank_transfer'
@@ -113,6 +127,15 @@ const Checkout = () => {
         <div className="md:col-span-2">
           <form onSubmit={handleSubmit} className="card space-y-4">
             <h2 className="text-lg font-semibold">معلومات الطلب</h2>
+
+            {rechargeMeta && (
+              <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 text-sm">
+                <p className="font-bold text-primary mb-1">بيانات الشحن المسبقة</p>
+                <p>الخدمة: {rechargeMeta.service || '-'}</p>
+                <p>Player ID: {rechargeMeta.playerId || '-'}</p>
+                {rechargeMeta.serverId ? <p>Server ID: {rechargeMeta.serverId}</p> : null}
+              </div>
+            )}
 
             <div>
               <label className="form-label">البريد الإلكتروني</label>

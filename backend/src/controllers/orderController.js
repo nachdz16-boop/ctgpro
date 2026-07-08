@@ -8,6 +8,80 @@ const emailService = require('../services/emailService');
 const { emitToUser } = require('../services/socketService');
 const crypto = require('crypto');
 
+const rechargeValidationRules = {
+  pubg: {
+    playerIdPattern: /^\d{6,20}$/,
+    playerIdError: 'Player ID يجب أن يكون أرقام فقط (6 إلى 20 رقم)',
+    serverRequired: false,
+  },
+  freefire: {
+    playerIdPattern: /^\d{6,20}$/,
+    playerIdError: 'Player ID يجب أن يكون أرقام فقط (6 إلى 20 رقم)',
+    serverRequired: false,
+  },
+  mlbb: {
+    playerIdPattern: /^\d{6,20}$/,
+    playerIdError: 'Game ID يجب أن يكون أرقام فقط (6 إلى 20 رقم)',
+    serverRequired: true,
+  },
+  inwi: {
+    playerIdPattern: /^\d{10,15}$/,
+    playerIdError: 'رقم الشحن يجب أن يكون أرقام فقط (10 إلى 15 رقم)',
+    serverRequired: false,
+  },
+  orange: {
+    playerIdPattern: /^\d{10,15}$/,
+    playerIdError: 'رقم الشحن يجب أن يكون أرقام فقط (10 إلى 15 رقم)',
+    serverRequired: false,
+  },
+  iam: {
+    playerIdPattern: /^\d{10,15}$/,
+    playerIdError: 'رقم الشحن يجب أن يكون أرقام فقط (10 إلى 15 رقم)',
+    serverRequired: false,
+  },
+};
+
+exports.validateRechargeAccount = async (req, res) => {
+  try {
+    const { serviceId, playerId, serverId = '', serviceType = 'games' } = req.body || {};
+    if (!serviceId) {
+      return res.status(400).json({ success: false, message: 'serviceId مطلوب' });
+    }
+
+    const rule = rechargeValidationRules[serviceId];
+    if (!rule) {
+      return res.status(400).json({ success: false, message: 'الخدمة المحددة غير مدعومة' });
+    }
+
+    const normalizedPlayerId = String(playerId || '').trim();
+    const normalizedServerId = String(serverId || '').trim();
+
+    if (!normalizedPlayerId) {
+      return res.status(400).json({ success: false, message: 'Player ID مطلوب' });
+    }
+    if (!rule.playerIdPattern.test(normalizedPlayerId)) {
+      return res.status(400).json({ success: false, message: rule.playerIdError });
+    }
+    if (rule.serverRequired && !normalizedServerId) {
+      return res.status(400).json({ success: false, message: 'Server ID مطلوب لهذه الخدمة' });
+    }
+
+    return res.json({
+      success: true,
+      message: 'تم التحقق من بيانات الشحن بنجاح',
+      data: {
+        serviceId,
+        serviceType,
+        playerId: normalizedPlayerId,
+        serverId: normalizedServerId,
+        validatedAt: new Date().toISOString(),
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 exports.createOrder = async (req, res) => {
   try {
     const { shippingAddress, email, phone, notes } = req.body;
@@ -48,6 +122,7 @@ exports.createOrder = async (req, res) => {
     const paymentMethod = req.body.paymentMethod || 'card';
     const paymentGateway = req.body.paymentGateway || '';
     const paymentDetails = req.body.paymentDetails || {};
+    const rechargeMeta = req.body.rechargeMeta || null;
 
     const paymentId = req.body.paymentId || req.body.transactionId || crypto.randomUUID();
     const isImmediatePayment = ['card', 'paypal', 'crypto', 'ctgpeo_credit'].includes(paymentMethod);
@@ -70,6 +145,7 @@ exports.createOrder = async (req, res) => {
       paymentStatus,
       paymentId,
       paymentDetails: paymentDetails,
+      rechargeMeta: rechargeMeta,
     });
 
     for (const item of cart.items) {
