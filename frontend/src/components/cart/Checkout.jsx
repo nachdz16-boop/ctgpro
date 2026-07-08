@@ -7,6 +7,23 @@ import { FaLock, FaCreditCard } from 'react-icons/fa';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 
+const demoPaymentsEnabled = import.meta.env.VITE_ENABLE_DEMO_PAYMENTS !== 'false';
+
+const paymentMethodOptions = demoPaymentsEnabled
+  ? [
+      { value: 'card', label: 'بطاقة ائتمان' },
+      { value: 'paypal', label: 'PayPal' },
+      { value: 'crypto', label: 'العملات الرقمية' },
+      { value: 'ctgpeo_credit', label: 'CTGPEO Credit' },
+      { value: 'bank_transfer', label: 'حوالة بنكية' },
+      { value: 'cod', label: 'الدفع عند الاستلام' },
+    ]
+  : [
+      { value: 'paypal', label: 'PayPal' },
+      { value: 'ctgpeo_credit', label: 'CTGPEO Credit' },
+      { value: 'bank_transfer', label: 'حوالة بنكية' },
+    ];
+
 const Checkout = () => {
   const { user, isAuthenticated } = useAuth();
   const { cart, getTotal, refreshCart } = useCart();
@@ -42,6 +59,12 @@ const Checkout = () => {
     if (!isAuthenticated) navigate('/login');
     if (!cart || cart.items?.length === 0) navigate('/shop');
   }, [isAuthenticated, cart]);
+
+  useEffect(() => {
+    if (!paymentMethodOptions.some((option) => option.value === paymentMethod)) {
+      setPaymentMethod(paymentMethodOptions[0]?.value || 'paypal');
+    }
+  }, [paymentMethod]);
 
   useEffect(() => {
     if (!rechargeMeta) return;
@@ -172,6 +195,12 @@ const Checkout = () => {
             <div className="bg-[var(--bg-card)] rounded-2xl p-4">
               <h3 className="text-lg font-semibold mb-3">طريقة الدفع التجريبية</h3>
 
+              {!demoPaymentsEnabled && (
+                <div className="mb-3 rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-sm text-amber-400">
+                  تم تعطيل وسائل الدفع التجريبية في هذه البيئة. اختر بوابة دفع مفعلة للإنتاج فقط.
+                </div>
+              )}
+
               <div className="space-y-3">
                 <div>
                   <label className="form-label">اختر الطريقة</label>
@@ -180,12 +209,9 @@ const Checkout = () => {
                     onChange={(e) => setPaymentMethod(e.target.value)}
                     className="form-input w-full"
                   >
-                    <option value="card">بطاقة ائتمان</option>
-                    <option value="paypal">PayPal</option>
-                    <option value="crypto">العملات الرقمية</option>
-                    <option value="ctgpeo_credit">CTGPEO Credit</option>
-                    <option value="bank_transfer">حوالة بنكية</option>
-                    <option value="cod">الدفع عند الاستلام</option>
+                    {paymentMethodOptions.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
                   </select>
                 </div>
 

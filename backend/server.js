@@ -5,13 +5,7 @@ const { Server } = require('socket.io');
 const config = require('./src/config/config');
 const socketService = require('./src/services/socketService');
 
-const allowedOrigins = [
-  config.frontendUrl,
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-  'http://localhost:4173',
-  'http://127.0.0.1:4173',
-].filter(Boolean);
+const allowedOrigins = config.cors.allowedOrigins;
 
 const server = http.createServer(app);
 const io = new Server(server, {

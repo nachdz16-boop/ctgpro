@@ -7,6 +7,7 @@ const Notification = require('../models/Notification');
 const emailService = require('../services/emailService');
 const { emitToUser } = require('../services/socketService');
 const crypto = require('crypto');
+const config = require('../config/config');
 
 const rechargeValidationRules = {
   pubg: {
@@ -123,6 +124,13 @@ exports.createOrder = async (req, res) => {
     const paymentGateway = req.body.paymentGateway || '';
     const paymentDetails = req.body.paymentDetails || {};
     const rechargeMeta = req.body.rechargeMeta || null;
+
+    if (!config.payments.allowedMethods.includes(paymentMethod)) {
+      return res.status(400).json({
+        success: false,
+        message: 'طريقة الدفع المحددة غير متاحة في هذه البيئة',
+      });
+    }
 
     const paymentId = req.body.paymentId || req.body.transactionId || crypto.randomUUID();
     const isImmediatePayment = ['card', 'paypal', 'crypto', 'ctgpeo_credit'].includes(paymentMethod);

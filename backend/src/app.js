@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const path = require('path');
+const mongoose = require('mongoose');
 const config = require('./config/config');
 const connectDB = require('./config/database');
 const errorHandler = require('./middleware/errorHandler');
@@ -39,13 +40,7 @@ const storeRoutes = safeRequire('./routes/storeRoutes');
 
 const app = express();
 
-const allowedOrigins = [
-  config.frontendUrl,
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-  'http://localhost:4173',
-  'http://127.0.0.1:4173',
-].filter(Boolean);
+const allowedOrigins = config.cors.allowedOrigins;
 
 const corsOptions = {
   origin(origin, callback) {
@@ -100,7 +95,44 @@ app.use('/api/store', storeRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+  const payload = {
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+  };
+
+  if (config.health.exposeDetails) {
+    payload.env = config.nodeEnv;
+    payload.demoPaymentsEnabled = config.payments.demoEnabled;
+    payload.emailConfigured = Boolean(config.email.user && config.email.pass && config.email.enabled);
+    payload.allowedOrigins = allowedOrigins;
+  }
+
+  res.json(payload);
+});
+
+app.get('/api/ready', (req, res) => {
+  const dbReady = mongoose.connection.readyState === 1;
+  const missing = [];
+
+  if (!dbReady) missing.push('database');
+  if (!config.jwtSecret || config.jwtSecret === 'ctgpro_super_secret_jwt_key_2024') missing.push('jwt');
+  if (!config.frontendUrl) missing.push('frontendUrl');
+  if (!config.cors.allowedOrigins.length) missing.push('allowedOrigins');
+  if (!config.payments.demoEnabled && !config.email.enabled) missing.push('emailDisabledInProduction');
+
+  const ready = missing.length === 0;
+  res.status(ready ? 200 : 503).json({
+    status: ready ? 'READY' : 'NOT_READY',
+    timestamp: new Date().toISOString(),
+    checks: {
+      database: dbReady,
+      jwtConfigured: Boolean(config.jwtSecret && config.jwtSecret !== 'ctgpro_super_secret_jwt_key_2024'),
+      demoPaymentsEnabled: config.payments.demoEnabled,
+      emailEnabled: config.email.enabled,
+      allowedOrigins: config.cors.allowedOrigins.length,
+    },
+    missing,
+  });
 });
 
 // Error handler
