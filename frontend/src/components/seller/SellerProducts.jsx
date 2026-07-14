@@ -13,7 +13,7 @@ import toast from 'react-hot-toast';
 
 const SellerProducts = () => {
   const { user } = useAuth();
-  const { t, formatCurrency } = useLanguage();
+  const { t, formatCurrency, language } = useLanguage();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -36,8 +36,8 @@ const SellerProducts = () => {
   };
 
   const filteredProducts = products.filter(product =>
-    product.name?.ar?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.name?.en?.toLowerCase().includes(searchTerm.toLowerCase())
+    (product?.name?.[language] || product?.name?.ar || product?.name?.en || product?.name || '')
+      .toString().toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
@@ -90,7 +90,7 @@ const SellerProducts = () => {
             <div className="relative">
               <Img
                 src={product.image || productPlaceholder}
-                alt={product.name?.ar || 'منتج'}
+                alt={product?.name?.[language] || product.name?.ar || 'منتج'}
                 className="w-full h-40 object-cover"
                 loader={<div className="w-full h-40 bg-[var(--bg-input)] animate-pulse" />}
                 unloader={<img src={productPlaceholder} alt="placeholder" className="w-full h-40 object-cover" />}
@@ -110,7 +110,7 @@ const SellerProducts = () => {
               </span>
             </div>
             <div className="p-4">
-              <h4 className="font-semibold text-sm line-clamp-1">{product.name?.ar || product.name}</h4>
+              <h4 className="font-semibold text-sm line-clamp-1">{product?.name?.[language] || product.name?.ar || product.name}</h4>
               <div className="flex items-center gap-2 mt-1 text-xs text-[var(--text-secondary)]">
                 <span className="px-2 py-0.5 rounded-full bg-[var(--bg-input)]">
                   {product.category}

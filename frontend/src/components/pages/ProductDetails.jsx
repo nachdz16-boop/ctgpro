@@ -13,7 +13,7 @@ const ProductDetails = () => {
   const { id } = useParams();
   const { addToCart } = useCart();
   const { user, isAuthenticated } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isInWishlist, setIsInWishlist] = useState(false);
@@ -107,11 +107,11 @@ const ProductDetails = () => {
     <div className="page-transition max-w-5xl mx-auto">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="bg-[var(--bg-primary)] rounded-2xl overflow-hidden">
-          <Img src={product.image || productPlaceholder} alt={product.name?.ar || 'منتج'} className="w-full h-[400px] object-contain" loader={<div className="w-full h-[400px] bg-[var(--bg-input)] animate-pulse" />} unloader={<img src={productPlaceholder} alt="placeholder" className="w-full h-[400px] object-contain" />} />
+          <Img src={product.image || productPlaceholder} alt={product?.name?.[language] || product.name?.ar || 'منتج'} className="w-full h-[400px] object-contain" loader={<div className="w-full h-[400px] bg-[var(--bg-input)] animate-pulse" />} unloader={<img src={productPlaceholder} alt="placeholder" className="w-full h-[400px] object-contain" />} />
         </div>
 
         <div>
-          <h1 className="text-2xl font-bold mb-2">{product.name?.ar || product.name}</h1>
+          <h1 className="text-2xl font-bold mb-2">{product?.name?.[language] || product.name?.ar || product.name}</h1>
           <div className="flex items-center gap-3 mb-3 flex-wrap">
             <div className="flex items-center gap-1">{renderStars(product.rating || 0)}<span className="text-sm text-[var(--text-muted)]">({product.reviewsCount || 0})</span></div>
           </div>
@@ -143,7 +143,7 @@ const ProductDetails = () => {
           </div>
 
           <div className="mt-4 flex gap-2">
-            <a href={`https://wa.me/?text=${encodeURIComponent(`CTGPRO - ${product.name?.ar || 'منتج'}: ${window.location.href}`)}`} target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg bg-green-500/20 text-green-500 text-sm hover:bg-green-500/30 transition-colors flex items-center gap-1"><FaWhatsapp /> واتساب</a>
+            <a href={`https://wa.me/?text=${encodeURIComponent(`CTGPRO - ${product?.name?.[language] || product.name?.ar || 'منتج'}: ${window.location.href}`)}`} target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg bg-green-500/20 text-green-500 text-sm hover:bg-green-500/30 transition-colors flex items-center gap-1"><FaWhatsapp /> واتساب</a>
             <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg bg-blue-500/20 text-blue-500 text-sm hover:bg-blue-500/30 transition-colors flex items-center gap-1"><FaFacebook /> فيسبوك</a>
           </div>
         </div>
@@ -151,7 +151,7 @@ const ProductDetails = () => {
 
       <div className="mt-8 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-6">
         <h2 className="text-lg font-bold mb-3">{t('product.description')}</h2>
-        <p className="text-[var(--text-secondary)] leading-relaxed">{product.description?.ar || product.name?.ar || 'لا يوجد وصف'}</p>
+        <p className="text-[var(--text-secondary)] leading-relaxed">{product?.description?.[language] || product?.description?.ar || product?.name?.[language] || product?.name?.ar || 'لا يوجد وصف'}</p>
       </div>
 
       {product.sellerId && (

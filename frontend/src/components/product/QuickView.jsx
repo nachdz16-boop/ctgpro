@@ -11,7 +11,7 @@ import toast from 'react-hot-toast';
 const QuickView = ({ product, isOpen, onClose, isInWishlist, onWishlistToggle }) => {
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
-  const { t, formatCurrency } = useLanguage();
+  const { t, formatCurrency, language } = useLanguage();
   const [qty, setQty] = useState(1);
 
   if (!isOpen || !product) return null;
@@ -47,9 +47,9 @@ const QuickView = ({ product, isOpen, onClose, isInWishlist, onWishlistToggle })
 
         <div className="grid md:grid-cols-2 gap-6">
           <div>
-            <Img
+              <Img
               src={product.image || productPlaceholder}
-              alt={product.name?.ar || 'منتج'}
+              alt={product?.name?.[language] || product.name?.ar || 'منتج'}
               className="w-full rounded-lg"
               loader={<div className="w-full h-72 rounded-lg bg-[var(--bg-input)] animate-pulse" />}
               unloader={<img src={productPlaceholder} alt="placeholder" className="w-full h-72 rounded-lg object-cover" />}
@@ -57,7 +57,7 @@ const QuickView = ({ product, isOpen, onClose, isInWishlist, onWishlistToggle })
           </div>
 
           <div>
-            <h2 className="text-xl font-bold mb-2">{product.name?.ar || product.name}</h2>
+            <h2 className="text-xl font-bold mb-2">{product?.name?.[language] || product.name?.ar || product.name}</h2>
 
             <div className="flex items-center gap-3 mb-3 flex-wrap">
               <div className="flex items-center gap-1">
@@ -70,7 +70,7 @@ const QuickView = ({ product, isOpen, onClose, isInWishlist, onWishlistToggle })
                     product.badge === 'sale' ? 'bg-amber-500/20 text-amber-500' :
                     'bg-emerald-500/20 text-emerald-500'}`}
                 >
-                  {product.tag?.ar || product.badge}
+                  {product?.tag?.[language] || product.tag?.ar || product.badge}
                 </span>
               )}
             </div>

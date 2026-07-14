@@ -22,7 +22,7 @@ const ProductCard = ({
 }) => {
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
-  const { t, formatCurrency } = useLanguage();
+  const { t, formatCurrency, language } = useLanguage();
   
   if (!product) return null;
 
@@ -56,7 +56,8 @@ const ProductCard = ({
       return;
     }
     addToCart(product._id || product.id, 1);
-    toast.success(`✅ تم شراء ${product.name?.ar || product.name}`);
+    const prodName = product?.name?.[language] || product?.name?.ar || product?.name?.en || product?.name || '';
+    toast.success(`✅ تم شراء ${prodName}`);
     // توجيه إلى صفحة الدفع
     setTimeout(() => {
       window.location.href = '/checkout';
@@ -147,7 +148,7 @@ const ProductCard = ({
       {/* ===== محتوى البطاقة ===== */}
       <div className="info">
         <Link to={`/product/${product._id || product.id}`} className="title hover:text-primary transition-colors">
-          {product.name?.ar || product.name}
+          {product?.name?.[language] || product?.name?.ar || product?.name?.en || product?.name}
         </Link>
         
         {/* ===== التقييم ===== */}
